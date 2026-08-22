@@ -1,69 +1,362 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+} from "@mui/material";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import QuestCard from "@/components/QuestCard";
+import { useQuests } from "@/hooks/useQuests";
+
+const QUESTS_PER_PAGE = 3;
 
 export default function Home() {
+  const router = useRouter();
+
+  const {
+    quests,
+    loading,
+  } = useQuests();
+
+  const [page, setPage] = useState(0);
+
+  /*
+   * ==============================
+   * QUEST PAGINATION
+   * ==============================
+   */
+
+  const totalPages = Math.ceil(
+    quests.length / QUESTS_PER_PAGE
+  );
+
+  const startIndex =
+    page * QUESTS_PER_PAGE;
+
+  const endIndex =
+    startIndex + QUESTS_PER_PAGE;
+
+  const currentQuests =
+    quests.slice(
+      startIndex,
+      endIndex
+    );
+
+  const canGoPrevious =
+    page > 0;
+
+  const canGoNext =
+    page < totalPages - 1;
+
+  /*
+   * ==============================
+   * PREVIOUS
+   * ==============================
+   */
+
+  const handlePrevious = () => {
+    if (canGoPrevious) {
+      setPage(
+        (currentPage) =>
+          currentPage - 1
+      );
+    }
+  };
+
+  /*
+   * ==============================
+   * NEXT
+   * ==============================
+   */
+
+  const handleNext = () => {
+    if (canGoNext) {
+      setPage(
+        (currentPage) =>
+          currentPage + 1
+      );
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <Navbar />
+
+      <Box
+        component="main"
+        sx={{
+          width: "100%",
+          maxWidth: 1400,
+          mx: "auto",
+          px: {
+            xs: 2,
+            sm: 3,
+            md: 4,
+          },
+          py: {
+            xs: 3,
+            md: 5,
+          },
+          boxSizing: "border-box",
+        }}
+      >
+        {/* ==============================
+            HERO
+        ============================== */}
+
+        <Hero />
+
+        {/* ==============================
+            RECOMMENDED QUESTS
+        ============================== */}
+
+        <Box
+          sx={{
+            mt: {
+              xs: 5,
+              md: 7,
+            },
+          }}
+        >
+          {/* HEADER */}
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "flex-end",
+              gap: 2,
+              mb: 3,
+              flexWrap: "wrap",
+            }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 800,
+                  mb: 0.5,
+                }}
+              >
+                Recommended Quests
+              </Typography>
+
+              <Typography
+                color="text.secondary"
+              >
+                Quests you might want
+                to try
+              </Typography>
+            </Box>
+
+            {/* VIEW ALL */}
+
+            <Button
+              variant="outlined"
+              onClick={() =>
+                router.push(
+                  "/quests"
+                )
+              }
+              sx={{
+                borderRadius: 2,
+                fontWeight: 700,
+                textTransform:
+                  "none",
+              }}
+            >
+              ดู Quest ทั้งหมด
+            </Button>
+          </Box>
+
+          {/* ==============================
+              LOADING
+          ============================== */}
+
+          {loading && (
+            <Box
+              sx={{
+                py: 8,
+                textAlign: "center",
+              }}
+            >
+              <Typography
+                color="text.secondary"
+              >
+                กำลังโหลด Quest...
+              </Typography>
+            </Box>
+          )}
+
+          {/* ==============================
+              QUEST LIST
+          ============================== */}
+
+          {!loading &&
+            currentQuests.length > 0 && (
+              <Grid
+                container
+                spacing={3}
+              >
+                {currentQuests.map(
+                  (quest) => (
+                    <Grid
+                      key={quest.id}
+                      size={{
+                        xs: 12,
+                        md: 4,
+                      }}
+                    >
+                      <QuestCard
+                        quest={quest}
+                      />
+                    </Grid>
+                  )
+                )}
+              </Grid>
+            )}
+
+          {/* ==============================
+              NO QUEST
+          ============================== */}
+
+          {!loading &&
+            quests.length === 0 && (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                  }}
+                >
+                  ยังไม่มี Quest
+                </Typography>
+
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    mb: 3,
+                  }}
+                >
+                  ลองสร้าง Quest
+                  แรกของคุณดู
+                </Typography>
+
+                <Button
+                  variant="contained"
+                  onClick={() =>
+                    router.push(
+                      "/create-quest"
+                    )
+                  }
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform:
+                      "none",
+                  }}
+                >
+                  สร้าง Quest
+                </Button>
+              </Box>
+            )}
+
+          {/* ==============================
+              PAGINATION
+          ============================== */}
+
+          {!loading &&
+            quests.length > 3 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent:
+                    "center",
+                  alignItems: "center",
+                  gap: 2,
+                  mt: 4,
+                }}
+              >
+                {/* PREVIOUS */}
+
+                <Button
+                  variant="outlined"
+                  startIcon={
+                    <ArrowBackIcon />
+                  }
+                  disabled={
+                    !canGoPrevious
+                  }
+                  onClick={
+                    handlePrevious
+                  }
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform:
+                      "none",
+                  }}
+                >
+                  ก่อนหน้า
+                </Button>
+
+                {/* PAGE */}
+
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    minWidth: 70,
+                    textAlign:
+                      "center",
+                  }}
+                >
+                  {page + 1} /{" "}
+                  {totalPages}
+                </Typography>
+
+                {/* NEXT */}
+
+                <Button
+                  variant="contained"
+                  endIcon={
+                    <ArrowForwardIcon />
+                  }
+                  disabled={
+                    !canGoNext
+                  }
+                  onClick={
+                    handleNext
+                  }
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform:
+                      "none",
+                  }}
+                >
+                  ถัดไป
+                </Button>
+              </Box>
+            )}
+        </Box>
+      </Box>
+    </>
   );
 }
